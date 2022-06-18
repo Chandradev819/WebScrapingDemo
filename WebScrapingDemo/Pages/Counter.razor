@@ -1,0 +1,34 @@
+﻿@page "/counter"
+<PageTitle>Counter</PageTitle>
+
+
+@if (datalist != null)
+{
+    @foreach (var item in datalist)
+    {
+        <b>@item</b>
+        <br /> <br />
+    }
+}
+
+@code {
+    private int currentCount = 0;
+    public string? msg { get; set; }
+    public List<string> datalist = new List<string>();
+    protected override async Task OnInitializedAsync()
+    {
+        HttpClient hc = new HttpClient();
+        //https://blog.hartleybrody.com/prevent-scrapers/
+        //HttpResponseMessage result = await hc.GetAsync("https://blog.hartleybrody.com/prevent-scrapers/");
+        HttpResponseMessage result = await hc.GetAsync("https://www.tradingview.com/chart/qf6uKWUG/?symbol=BITSTAMP%3ABTCUSD");
+        Stream stream = await result.Content.ReadAsStreamAsync();
+        HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+        doc.Load(stream);
+        var headerNames = doc.DocumentNode.SelectNodes("//span[contains(@class, 'inner-ghhqKDrt')]");
+        foreach (var item in headerNames)
+        {
+            datalist.Add(item.InnerText);
+        }
+    }
+   
+}
